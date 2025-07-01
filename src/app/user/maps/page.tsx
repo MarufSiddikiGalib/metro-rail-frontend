@@ -1,29 +1,36 @@
 "use client";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Navbar from "@/components/NavBar";
 import "leaflet/dist/leaflet.css";
 
-// Only dynamically import MapContainer to avoid SSR issues with window/leaflet
+// Dynamically import MapContainer to avoid SSR issues with window/leaflet
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
   { ssr: false }
 );
 
-import { TileLayer, Marker, Polyline, Popup } from "react-leaflet";
-import L, { Icon } from "leaflet";
+// Do NOT import from "leaflet" or "react-leaflet" at the top-level except for style
 
 // Metro logo marker icon (must be created in useMemo and only on client)
 function useMetroIcon() {
-  return useMemo(() => {
-    if (typeof window === "undefined") return undefined;
-    return new L.Icon({
-      iconUrl: "/metro.jpg",
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32],
+  const [icon, setIcon] = useState<any>(undefined);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    import("leaflet").then(L => {
+      setIcon(
+        new L.Icon({
+          iconUrl: "/metro.jpg",
+          iconSize: [32, 32],
+          iconAnchor: [16, 32],
+          popupAnchor: [0, -32],
+        })
+      );
     });
   }, []);
+
+  return icon;
 }
 
 // Station coordinates
@@ -57,11 +64,24 @@ export default function MapsPage() {
   const [isClient, setIsClient] = useState(false);
   const metroIcon = useMetroIcon();
 
+  // Dynamically import react-leaflet components only on client
+  const [leafletComponents, setLeafletComponents] = useState<any | null>(null);
   useEffect(() => {
     setIsClient(true); // Only render map on client
     fetch("http://localhost:8000/api/stations")
       .then(res => res.json())
       .then(setStations);
+    // dynamically import react-leaflet components
+    Promise.all([
+      import("react-leaflet").then(mod => ({
+        TileLayer: mod.TileLayer,
+        Marker: mod.Marker,
+        Polyline: mod.Polyline,
+        Popup: mod.Popup,
+      }))
+    ]).then(([rl]) => {
+      setLeafletComponents(rl);
+    });
   }, []);
 
   // Prepare station data with coordinates
@@ -80,6 +100,21 @@ export default function MapsPage() {
     .filter((station): station is NonNullable<typeof station> => station != null);
 
   const polylinePoints = orderedStations.map(s => [s.lat, s.lng] as [number, number]);
+
+  // Wait for dynamic imports before rendering map
+  if (!leafletComponents) {
+    return (
+      <div className="bg-white min-h-screen w-full">
+        <Navbar />
+        <main className="max-w-4xl mx-auto pt-4 pb-10 px-3">
+          <h1 className="text-3xl font-bold text-[#2b4377] mt-2 mb-1">Maps</h1>
+          <p>Loading map...</p>
+        </main>
+      </div>
+    );
+  }
+
+  const { TileLayer, Marker, Polyline, Popup } = leafletComponents;
 
   return (
     <div className="bg-white min-h-screen w-full">
@@ -117,7 +152,7 @@ export default function MapsPage() {
                   <Marker
                     key={station.id}
                     position={[station.lat, station.lng]}
-                    icon={metroIcon as Icon | undefined}
+                    icon={metroIcon}
                   >
                     <Popup>
                       <b>{station.displayName}</b><br />

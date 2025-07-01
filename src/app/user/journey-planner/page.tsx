@@ -3,10 +3,50 @@ import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Navbar from "@/components/NavBar";
 import "leaflet/dist/leaflet.css";
-import { TileLayer, Marker, Polyline, Popup, useMapEvents } from "react-leaflet";
-import L, { Icon } from "leaflet";
 
-// Static coordinates for known station names
+// Dynamically import MapContainer to avoid SSR issues
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+
+// Metro/user icon hooks with dynamic leaflet import
+function useMetroIcon() {
+  const [icon, setIcon] = useState<any>(undefined);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    import("leaflet").then(L => {
+      setIcon(
+        new L.Icon({
+          iconUrl: "/metro.jpg",
+          iconSize: [32, 32],
+          iconAnchor: [16, 32],
+          popupAnchor: [0, -32],
+        })
+      );
+    });
+  }, []);
+  return icon;
+}
+function useUserIcon(color: "blue" | "red") {
+  const [icon, setIcon] = useState<any>(undefined);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    import("leaflet").then(L => {
+      setIcon(
+        new L.Icon({
+          iconUrl: color === "blue" ? "/marker-blue.png" : "/marker-red.png",
+          iconSize: [32, 32],
+          iconAnchor: [16, 32],
+          popupAnchor: [0, -32],
+        })
+      );
+    });
+  }, [color]);
+  return icon;
+}
+
+// Station coordinates
 const stationCoords: Record<string, { lat: number; lng: number }> = {
   "Uttara North": { lat: 23.8727, lng: 90.3845 },
   "Uttara Center": { lat: 23.8645, lng: 90.3845 },
@@ -25,89 +65,19 @@ const stationCoords: Record<string, { lat: number; lng: number }> = {
   "Bangladesh Secretariat": { lat: 23.7333, lng: 90.4082 },
   "Motijheel": { lat: 23.7296, lng: 90.4203 }
 };
+
 const orderedNames = [
   "Uttara North", "Uttara Center", "Uttara South", "Pallabi", "Mirpur-11",
   "Mirpur-10", "Kazipara", "Shewrapara", "Agargaon", "Bijoy Sarani", "Farmgate",
   "Kawran Bazar", "Shahbag", "Dhaka University", "Bangladesh Secretariat", "Motijheel"
 ];
-// Avoid errors ssr-side by dynamically importing MapContainer
-// This ensures Leaflet only runs on the client side where `window` is defined
-const MapContainer = dynamic(
-  () => import("react-leaflet").then((mod)  => mod.MapContainer),
-  { ssr: false }
-);
 
-// Metro icon
-
-function useMetroIcon() {
-  const [icon, setIcon] = useState<L.Icon | undefined>(undefined);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    import("leaflet").then(L => {
-      setIcon(
-        new L.Icon({
-          iconUrl: "/metro.jpg",
-          iconSize: [32, 32],
-          iconAnchor: [16, 32],
-          popupAnchor: [0, -32],
-        })
-      );
-    });
-  }, []);
-
-  return icon;
-}
-
-function useUserIcon(color: "blue" | "red") {
-  const [icon, setIcon] = useState<L.Icon | undefined>(undefined);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    import("leaflet").then(L => {
-      setIcon(
-        new L.Icon({
-          iconUrl: color === "blue" ? "/marker-blue.png" : "/marker-red.png",
-          iconSize: [32, 32],
-          iconAnchor: [16, 32],
-          popupAnchor: [0, -32],
-        })
-      );
-    });
-  }, [color]);
-
-  return icon;
-}
-
-
-
-// function useMetroIcon() {
-//   return useMemo(() => {
-//     if (typeof window === "undefined") return undefined;
-//     return new L.Icon({
-//       iconUrl: "/metro.jpg",
-//       iconSize: [32, 32],
-//       iconAnchor: [16, 32],
-//       popupAnchor: [0, -32],
-//     });
-//   }, []);
-// }
-// For user markers
-// function useUserIcon(color: "blue" | "red") {
-//   return useMemo(() => {
-//     if (typeof window === "undefined") return undefined;
-//     return new L.Icon({
-//       iconUrl: color === "blue" ? "/marker-blue.png" : "/marker-red.png",
-//       iconSize: [32, 32],
-//       iconAnchor: [16, 32],
-//       popupAnchor: [0, -32],
-//     });
-//   }, [color]);
-// }
 // Map click for picking location
 function LocationPicker({ onPick, disabled }: { onPick: (lat: number, lng: number) => void; disabled: boolean }) {
+  // Import useMapEvents here to avoid SSR issues and always call the hook
+  const { useMapEvents } = require("react-leaflet");
   useMapEvents({
-    click: (e) => {
+    click: (e: any) => {
       if (!disabled) onPick(e.latlng.lat, e.latlng.lng);
     }
   });
@@ -115,9 +85,6 @@ function LocationPicker({ onPick, disabled }: { onPick: (lat: number, lng: numbe
 }
 
 // Haversine (km) calculate km distance between two lat/lng points
-// Source: https://stackoverflow.com/a/27943
-// This is a simplified version for small distances in Dhaka
-// For more accuracy, consider using a library like geolib or haversine-distance
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -130,7 +97,6 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Main Journey Planner component
 export default function JourneyPlannerPage() {
   const [isClient, setIsClient] = useState(false);
   const [stations, setStations] = useState<any[]>([]);
@@ -142,18 +108,27 @@ export default function JourneyPlannerPage() {
   const userIconBlue = useUserIcon("blue");
   const userIconRed = useUserIcon("red");
 
-  // Fetch stations from backend API
+  // Dynamically import react-leaflet components
+  const [leafletComponents, setLeafletComponents] = useState<any | null>(null);
   useEffect(() => {
     setIsClient(true);
     fetch("http://localhost:8000/api/stations")
       .then(res => res.json())
       .then(setStations)
       .catch(() => setStations([]));
+    Promise.all([
+      import("react-leaflet").then(mod => ({
+        TileLayer: mod.TileLayer,
+        Marker: mod.Marker,
+        Polyline: mod.Polyline,
+        Popup: mod.Popup,
+      }))
+    ]).then(([rl]) => setLeafletComponents(rl));
   }, []);
 
   // Map backend stations to coordinates (using your mapping)
   const stationsWithCoords = stations
-    .map(([id, name, displayName, platform]) => {
+    .map(([id, name, displayName, platform]: any) => {
       const coords = stationCoords[name];
       if (coords) return { id, name, lat: coords.lat, lng: coords.lng, displayName, platform };
       return null;
@@ -198,10 +173,9 @@ export default function JourneyPlannerPage() {
     const toStation = findNearestStation(to.lat, to.lng);
 
     if (!fromStation || !toStation) {
-    // Optionally show an error or just return
-    alert("Could not find nearest stations.");
-    return;
-  }
+      alert("Could not find nearest stations.");
+      return;
+    }
 
     // Step 1: walk/ride to nearest station
     const step1 = {
@@ -243,7 +217,6 @@ export default function JourneyPlannerPage() {
       walkingTime: Math.round((toStation.distance / 5) * 60), // walking 5km/h
     };
     setSteps([step1, step2, step3]);
-    
   }
 
   // Reset everything
@@ -253,6 +226,20 @@ export default function JourneyPlannerPage() {
     setSteps([]);
     setPickMode(null);
   }
+
+  if (!leafletComponents) {
+    return (
+      <div className="bg-white min-h-screen w-full">
+        <Navbar />
+        <main className="max-w-4xl mx-auto pt-4 pb-10 px-3">
+          <h1 className="text-3xl font-bold text-[#2b4377] mt-2 mb-4">Journey Planner</h1>
+          <div>Loading map...</div>
+        </main>
+      </div>
+    );
+  }
+
+  const { TileLayer, Marker, Polyline, Popup } = leafletComponents;
 
   return (
     <div className="bg-white min-h-screen w-full">
@@ -309,7 +296,7 @@ export default function JourneyPlannerPage() {
                   <Marker
                     key={station.id}
                     position={[station.lat, station.lng]}
-                    icon={metroIcon as Icon | undefined}
+                    icon={metroIcon}
                   >
                     <Popup>
                       <b>{station.displayName}</b><br />
@@ -318,12 +305,12 @@ export default function JourneyPlannerPage() {
                   </Marker>
                 ))}
                 {from && (
-                  <Marker position={[from.lat, from.lng]} icon={userIconBlue as Icon | undefined}>
+                  <Marker position={[from.lat, from.lng]} icon={userIconBlue}>
                     <Popup>From: Your selected location</Popup>
                   </Marker>
                 )}
                 {to && (
-                  <Marker position={[to.lat, to.lng]} icon={userIconRed as Icon | undefined}>
+                  <Marker position={[to.lat, to.lng]} icon={userIconRed}>
                     <Popup>To: Your selected location</Popup>
                   </Marker>
                 )}
@@ -385,7 +372,7 @@ export default function JourneyPlannerPage() {
         )}
         <div className="mt-10">
           <div className="text-sm text-gray-500">
-           show a step-by-step journey using the nearest metro stations.
+            show a step-by-step journey using the nearest metro stations.
           </div>
         </div>
       </main>
