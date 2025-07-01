@@ -39,10 +39,10 @@ const StaffPage = () => {
         });
 
         if (res.ok) {
-          const data = await res.json();
+          const data: any[] = await res.json();
            // Map each array to an object 
            // React needs unique keys and readable properties, so shape the data into objects.
-        const staffObjects = data.map((row: any[]) => ({
+        const staffObjects:Staff[] = data.map((row) => ({
             STAFFID: row[0],
             ROLE: row[1],
             ASSIGNEDSHIFT: row[2],

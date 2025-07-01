@@ -33,7 +33,7 @@ export default function AdminMenu() {
   const blueDark = "#2b4377";
   const blueMid = "#4d6fa9";
   const red = "#e53935";
-  const white = "#fff";
+  //const white = "#fff";
 
   return (
     <>

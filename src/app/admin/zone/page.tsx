@@ -35,10 +35,10 @@ const ZonePage = () => {
         });
 
         if (res.ok) {
-          const data = await res.json();
+          const data: any[] = await res.json();
            // Map each array to an object 
            // React needs unique keys and readable properties, so shape the data into objects.
-        const zoneObjects = data.map((row: any[]) => ({
+        const zoneObjects:Zone[] = data.map((row: any[]) => ({
             ZONEID: row[0],
             ZONENAME: row[1],
           }));

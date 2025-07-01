@@ -86,6 +86,7 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number) {
       Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
+
 // Main Journey Planner component
 export default function JourneyPlannerPage() {
   const [isClient, setIsClient] = useState(false);
@@ -109,7 +110,7 @@ export default function JourneyPlannerPage() {
 
   // Map backend stations to coordinates (using your mapping)
   const stationsWithCoords = stations
-    .map(([id, name, displayName, platform]: any) => {
+    .map(([id, name, displayName, platform]) => {
       const coords = stationCoords[name];
       if (coords) return { id, name, lat: coords.lat, lng: coords.lng, displayName, platform };
       return null;
@@ -199,6 +200,7 @@ export default function JourneyPlannerPage() {
       walkingTime: Math.round((toStation.distance / 5) * 60), // walking 5km/h
     };
     setSteps([step1, step2, step3]);
+    
   }
 
   // Reset everything

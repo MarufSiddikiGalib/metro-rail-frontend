@@ -34,9 +34,9 @@ const TransactionPage = () => {
       });
 
       if (res.ok) {
-        const data = await res.json();
+        const data: any[] = await res.json();
         // If data is array of arrays, map to objects
-        const transactionObjects = data.map((row: any[]) => ({
+        const transactionObjects:Transaction[] = data.map((row: any[]) => ({
           TRANSACTIONID: row[0],
           AMOUNT: row[1],
           PAYMENTDATE: row[2] ? String(row[2]).slice(0, 10) : "",

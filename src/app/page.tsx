@@ -114,8 +114,21 @@ export default function Home() {
         </section>
 
         {/* Footer */}
-        <footer className="mt-16 text-center text-gray-500 text-sm">
-          &copy; {new Date().getFullYear()} ADMS Section C Metro Rail Management Team. All rights reserved.
+        <footer className="mt-16 text-center text-gray-500 text-lg">
+          &copy; {new Date().getFullYear()} Developed with ❤️ by Maruf Siddiki Galib. All rights reserved.
+          <br />
+          <p> Get in touch on{" "}
+          
+          <a
+          
+            href="https://www.linkedin.com/in/maruf-siddiki-galib-7360092b5/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline text-lg"
+        >
+           LinkedIn
+         </a>
+          </p>
         </footer>
       </main>
     </div>

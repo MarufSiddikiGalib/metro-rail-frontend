@@ -143,7 +143,7 @@ export default function TicketFarePage() {
       );
       setFare(res.fare);
       setDistance(res.distance);
-    } catch (e) {
+    } catch  {
       setFare(null);
       setDistance(null);
     } finally {
@@ -199,7 +199,7 @@ export default function TicketFarePage() {
 
       // 3. Open payment modal
       setShowPaymentModal(true);
-    } catch (e) {
+    } catch {
       alert("Ticket purchase failed. Please try again.");
     }
   }
@@ -362,6 +362,28 @@ export default function TicketFarePage() {
           onClose={() => setShowPaymentModal(false)}
         />
       </div>
+
+{/* Footer */}
+        <footer className="mt-16 text-center text-gray-500 text-lg">
+          &copy; {new Date().getFullYear()} Developed with ❤️ by Maruf Siddiki Galib. All rights reserved.
+          <br />
+          <p> Get in touch on{" "}
+          
+          <a
+          
+            href="https://www.linkedin.com/in/maruf-siddiki-galib-7360092b5/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline text-lg"
+        >
+           LinkedIn
+         </a>
+          </p>
+        </footer>
+
+
+
     </div>
+    
   );
 }

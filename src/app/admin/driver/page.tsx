@@ -39,8 +39,8 @@ const DriverPage = () => {
       });
 
       if (res.ok) {
-        const data = await res.json();
-        const driverObjects = data.map((row: any[]) => ({
+        const data:any[] = await res.json();
+        const driverObjects: Driver[] = data.map((row) => ({
           DRIVERID: row[0],
           NAME: row[1],
           LICENSENUMBER: row[2],
@@ -65,7 +65,7 @@ const DriverPage = () => {
       return;
     }
     fetchDrivers();
-    // eslint-disable-next-line
+    
   }, [router]);
 
   // Add or Update driver

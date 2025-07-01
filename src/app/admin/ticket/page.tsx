@@ -33,9 +33,9 @@ const TicketPage = () => {
       });
 
       if (res.ok) {
-        const data = await res.json();
+        const data: any[] = await res.json();
         // Assume data is a 2D array as in your stations page
-        const ticketObjects = data.map((row: any[]) => ({
+        const ticketObjects:Ticket[] = data.map((row) => ({
           TICKETNUMBER: row[0],
           TYPE1: row[1],
           TYPE2: row[2],

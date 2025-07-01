@@ -90,7 +90,7 @@ import AdminMenu from "@/components/AdminMenu";
 function useCountUp(target: number, duration = 1200) {
   const [count, setCount] = useState(0);
   useEffect(() => {
-    let start = 0;
+    const start = 0;
     let startTime: number | null = null;
     function animate(timestamp: number) {
       if (!startTime) startTime = timestamp;

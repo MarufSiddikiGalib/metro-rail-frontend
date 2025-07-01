@@ -40,8 +40,8 @@ const StationPage = () => {
       });
 
       if (res.ok) {
-        const data = await res.json();
-        const stationObjects = data.map((row: any[]) => ({
+        const data: any[] = await res.json();
+        const stationObjects:Station[] = data.map((row: any[]) => ({
           STATIONID: row[0],
           STATIONNAME: row[1],
           LOCATION: row[2],

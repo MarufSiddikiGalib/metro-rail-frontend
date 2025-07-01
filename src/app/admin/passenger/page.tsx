@@ -20,9 +20,9 @@ const PassengerPage = () => {
   const [loading, setLoading] = useState(true);
 
   // CRUD form state
-  const [name, setName] = useState("");
-  const [address, setAddress] = useState("");
-  const [editId, setEditId] = useState<number | null>(null);
+  // const [name, setName] = useState("");
+  // const [address, setAddress] = useState("");
+  // const [editId, setEditId] = useState<number | null>(null);
 
   // Fetch passenger data from the API
   const fetchPassengers = async () => {
@@ -37,8 +37,8 @@ const PassengerPage = () => {
       });
 
       if (res.ok) {
-        const data = await res.json();
-        const passengerObjects = data.map((row: any[]) => ({
+        const data:any[] = await res.json();
+        const passengerObjects:Passenger[] = data.map((row) => ({
           PASSENGERID: row[0],
           NAME: row[1],
           ADDRESS: row[2],
