@@ -38,29 +38,72 @@ const MapContainer = dynamic(
 );
 
 // Metro icon
+
 function useMetroIcon() {
-  return useMemo(() => {
-    if (typeof window === "undefined") return undefined;
-    return new L.Icon({
-      iconUrl: "/metro.jpg",
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32],
+  const [icon, setIcon] = useState<L.Icon | undefined>(undefined);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    import("leaflet").then(L => {
+      setIcon(
+        new L.Icon({
+          iconUrl: "/metro.jpg",
+          iconSize: [32, 32],
+          iconAnchor: [16, 32],
+          popupAnchor: [0, -32],
+        })
+      );
     });
   }, []);
+
+  return icon;
 }
-// For user markers
+
 function useUserIcon(color: "blue" | "red") {
-  return useMemo(() => {
-    if (typeof window === "undefined") return undefined;
-    return new L.Icon({
-      iconUrl: color === "blue" ? "/marker-blue.png" : "/marker-red.png",
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32],
+  const [icon, setIcon] = useState<L.Icon | undefined>(undefined);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    import("leaflet").then(L => {
+      setIcon(
+        new L.Icon({
+          iconUrl: color === "blue" ? "/marker-blue.png" : "/marker-red.png",
+          iconSize: [32, 32],
+          iconAnchor: [16, 32],
+          popupAnchor: [0, -32],
+        })
+      );
     });
   }, [color]);
+
+  return icon;
 }
+
+
+
+// function useMetroIcon() {
+//   return useMemo(() => {
+//     if (typeof window === "undefined") return undefined;
+//     return new L.Icon({
+//       iconUrl: "/metro.jpg",
+//       iconSize: [32, 32],
+//       iconAnchor: [16, 32],
+//       popupAnchor: [0, -32],
+//     });
+//   }, []);
+// }
+// For user markers
+// function useUserIcon(color: "blue" | "red") {
+//   return useMemo(() => {
+//     if (typeof window === "undefined") return undefined;
+//     return new L.Icon({
+//       iconUrl: color === "blue" ? "/marker-blue.png" : "/marker-red.png",
+//       iconSize: [32, 32],
+//       iconAnchor: [16, 32],
+//       popupAnchor: [0, -32],
+//     });
+//   }, [color]);
+// }
 // Map click for picking location
 function LocationPicker({ onPick, disabled }: { onPick: (lat: number, lng: number) => void; disabled: boolean }) {
   useMapEvents({
