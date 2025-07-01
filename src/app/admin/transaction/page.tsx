@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import LogoutButton from "@/components/LogoutButton";
+//import LogoutButton from "@/components/LogoutButton";
 import Navbar from "@/components/NavBar";
 import AdminMenu from "@/components/AdminMenu";
 import Link from "next/link";
