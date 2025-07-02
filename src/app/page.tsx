@@ -4,6 +4,7 @@ import Navbar from "@/components/NavBar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Notice from "@/components/notice";
 
 export default function Home() {
   const router = useRouter();
@@ -11,6 +12,9 @@ export default function Home() {
   return (
     <div className="bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen w-full">
       <Navbar />
+
+ <Notice />
+ 
 
       {/* Hero Section */}
       <main className="max-w-6xl mx-auto pt-10 pb-10 px-4 flex flex-col items-center">
